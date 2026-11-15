@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Hans and Run</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="Hans1.png">
+</head>
+<body>
+  <div id="game-wrap">
+    <canvas id="game"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-left">
+        <div class="hud-item" id="hud-score"> 0</div>
+        <div class="hud-item" id="hud-coins"> 0</div>
+      </div>
+      <div class="hud-center" id="hud-level">Level 1</div>
+      <div class="hud-right">
+        <div class="hud-item" id="hud-time"> 0:00</div>
+        <div class="hud-item" id="hud-lives">x 3</div>
+      </div>
+    </div>
+    <div id="powerbar"></div>
+
+    <!-- Touch controls -->
+    <div id="touch" class="hidden">
+      <div class="touch-side">
+        <button class="tbtn" id="btn-left" aria-label="Links">&#9664;</button>
+        <button class="tbtn" id="btn-right" aria-label="Rechts">&#9654;</button>
+      </div>
+      <div class="touch-side">
+        <button class="tbtn big" id="btn-jump" aria-label="Springen">&#8679;</button>
+      </div>
+    </div>
+
+    <!-- Overlays -->
+    <div id="overlay" class="overlay">
+      <div class="panel" id="panel-start">
+        <img src="Hans2.png" alt="Hans" class="mascot">
+        <h1>H<span class="accent">&amp;</span> Run</h1>
+        <p class="subtitle">Ein modernes Jump'n'Run mit Hans</p>
+        <div class="controls-hint">
+          <div class="key-row"><span class="key">A</span><span class="key">D</span> oder <span class="key">&#8592;</span><span class="key">&#8594;</span> Laufen</div>
+          <div class="key-row"><span class="key">Leertaste</span> / <span class="key">W</span> Springen (l&#228;nger dr&#252;cken = h&#246;her)</div>
+          <div class="key-row"><span class="key">Shift</span> Sprint &nbsp;&middot;&nbsp; <span class="key">P</span> Pause &nbsp;&middot;&nbsp; <span class="key">M</span> Ton</div>
+        </div>
+        <button class="btn primary" id="btn-start">Spiel starten</button>
+        <p class="best" id="best-score"></p>
+      </div>
+
+      <div class="panel hidden" id="panel-pause">
+        <h2>Pause</h2>
+        <button class="btn primary" id="btn-resume">Weiter</button>
+        <button class="btn" id="btn-restart-pause">Level neu starten</button>
+        <button class="btn" id="btn-quit">Zur&#252;ck zum Titel</button>
+      </div>
+
+      <div class="panel hidden" id="panel-complete">
+        <h2 id="complete-title">Level geschafft!</h2>
+        <div class="stats" id="complete-stats"></div>
+        <button class="btn primary" id="btn-next">Weiter</button>
+      </div>
+
+      <div class="panel hidden" id="panel-gameover">
+        <h2>Game Over</h2>
+        <div class="stats" id="gameover-stats"></div>
+        <button class="btn primary" id="btn-tryagain">Nochmal</button>
+        <button class="btn" id="btn-quit2">Zur&#252;ck zum Titel</button>
+      </div>
+
+      <div class="panel hidden" id="panel-win">
+        <img src="Hans1.png" alt="Hans winkt" class="mascot">
+        <h2>Durchgespielt!</h2>
+        <div class="stats" id="win-stats"></div>
+        <button class="btn primary" id="btn-win-restart">Von vorn</button>
+      </div>
+    </div>
+
+    <div id="mute-indicator" class="hidden">&#128263; Ton aus</div>
+    <div id="toasts"></div>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
