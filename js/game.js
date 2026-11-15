@@ -1135,7 +1135,7 @@ function drawPlayer(ctx) {
   ctx.globalAlpha = 1;
 
   const moving = Math.abs(p.vx) > 30;
-  const frame = Math.floor(p.animT * 9) % 2;
+  const frame = Math.floor(p.animT * 4) % 2;
   let img = p.onGround ? (moving && frame === 0 ? Sprites.walk : Sprites.idle) : Sprites.walk;
   if (p.facing < 0) img = img === Sprites.walk ? Sprites.walkL : Sprites.idleL;
 
