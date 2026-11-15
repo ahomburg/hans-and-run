@@ -446,6 +446,7 @@ const Game = {
     this.player = {
       x, y, w: 40, h: 64, vx: 0, vy: 0, onGround: false, facing: 1,
       coyote: 0, jumpBuf: 0, jumps: 0, animT: 0, dropT: 0,
+      stillT: 0, camping: false, campTick: 0, campedToast: false,
       invuln: 0, respawnGrace: 0, sprintTrail: 0,
       powers: { shield: 0, wings: 0, speed: 0, magnet: 0 },
       spawnX: x, spawnY: y,
@@ -518,6 +519,7 @@ function update(dt) {
   updateEnemies(dt);
   updatePickups(dt);
   updateCamera(dt);
+  updateAmbient(dt);
   updateParticles(dt);
   Game.shake = Math.max(0, Game.shake - dt * 40);
   Game.respawnFlash = Math.max(0, Game.respawnFlash - dt);
@@ -609,19 +611,39 @@ function updatePlayer(dt) {
   if (p.respawnGrace > 0) p.respawnGrace -= dt;
   p.animT += dt * (p.onGround ? (Math.abs(p.vx) / 60 + 0.5) : 0.4);
 
+  // Camping: Hans ist Camper — Stillstand zaehlt sich aus
+  if (p.onGround && Math.abs(p.vx) < 8 && !Input.left && !Input.right && !Input.jump && !Input.jumpPressed) {
+    p.stillT += dt;
+    if (p.stillT > 3.2) {
+      if (!p.camping) {
+        p.camping = true;
+        AudioSys.noise(.3, .06);
+        if (!p.campedToast) { p.campedToast = true; UI.toast("Hans macht Urlaub — Camping-Bonus!"); }
+      }
+      p.campTick += dt;
+      if (p.campTick >= 1) {
+        p.campTick -= 1;
+        addScore(25, p.x + p.w / 2, p.y - 12);
+        AudioSys.noise(.2, .035);           // Knistern
+      }
+    }
+  } else {
+    p.stillT = 0; p.camping = false; p.campTick = 0;
+  }
+
   // Checkpoints
   for (const c of Game.checkpoints) {
     if (!c.active && Math.abs(p.x + p.w / 2 - c.x) < 70) {
       c.active = true;
       p.spawnX = c.x - p.w / 2; p.spawnY = c.y - p.h - TILE;
       AudioSys.sCheck();
-      UI.toast("Checkpoint!");
+      UI.toast("Zelt aufgeschlagen — Checkpoint!");
       burst(c.x, c.y - 60, 18, ["#22d3ee", "#3b82f6", "#ffffff"]);
     }
   }
-  // Ziel
+  // Ziel (Zelt)
   const g = Game.goalE;
-  if (!g.reached && overlap({ x: p.x, y: p.y, w: p.w, h: p.h }, { x: g.x - 30, y: g.y - 130, w: 60, h: 130 })) {
+  if (!g.reached && overlap({ x: p.x, y: p.y, w: p.w, h: p.h }, { x: g.x - 45, y: g.y - 110, w: 90, h: 110 })) {
     Game.completeLevel();
   }
 }
@@ -770,8 +792,35 @@ function updateCamera(dt) {
   Game.cam.y = lerp(Game.cam.y, targetY, k);
 }
 
-function updateParticles(dt) {
-  for (const pt of Game.particles) {
+function updateAmbient(dt) {
+  // Rauch + Glut an allen brennenden Lagerfeuern
+  for (const c of Game.checkpoints) {
+    if (!c.active) continue;
+    if (Math.random() < dt * 5) smoke(c.x + 44, c.y - 30);
+    if (Math.random() < dt * 2) ember(c.x + 42 + rnd(-4, 4), c.y - 22);
+  }
+  if (Game.goalE) {
+    if (Math.random() < dt * 5) smoke(Game.goalE.x + 68, Game.goalE.y - 34);
+    if (Math.random() < dt * 2) ember(Game.goalE.x + 66 + rnd(-4, 4), Game.goalE.y - 26);
+  }
+  const p = Game.player;
+  if (p.camping && Math.random() < dt * 7) smoke(p.x + p.w / 2 + p.facing * 42 - 4, p.y + p.h - 30);
+}
+
+function smoke(x, y) {
+  Game.particles.push({
+    x: x + rnd(-3, 3), y, vx: rnd(-8, 14), vy: rnd(-70, -45),
+    life: rnd(1, 1.8), t: rnd(1, 1.8), col: "rgba(130,130,140,.5)", r: rnd(3, 6), grav: -60
+  });
+}
+function ember(x, y) {
+  Game.particles.push({
+    x, y, vx: rnd(-25, 25), vy: rnd(-130, -70),
+    life: rnd(.4, .8), t: rnd(.4, .8), col: "#fb923c", r: rnd(1.5, 3), grav: 120
+  });
+}
+
+function updateParticles(dt) {  for (const pt of Game.particles) {
     pt.t -= dt; pt.x += pt.vx * dt; pt.y += pt.vy * dt;
     pt.vy += (pt.grav !== undefined ? pt.grav : 500) * dt;
   }
@@ -890,25 +939,59 @@ function drawBackground(ctx, W, H, scaleCss) {
     ctx.fill();
   }
 
-  // Berge + Huegel (Parallax)
+  // Berge + Huegel (Parallax), ferne Ebene mit Camping-Zelten
   drawRidge(ctx, W, H, Game.cam.x * 0.18 * scaleCss, Game.cam.y * 0.18 * scaleCss, pal.mount, 0.42, 120);
-  drawRidge(ctx, W, H, Game.cam.x * 0.4 * scaleCss, Game.cam.y * 0.32 * scaleCss + 30, pal.hillFar, 0.6, 85);
+  drawRidge(ctx, W, H, Game.cam.x * 0.4 * scaleCss, Game.cam.y * 0.32 * scaleCss + 30, pal.hillFar, 0.6, 85, true);
   drawRidge(ctx, W, H, Game.cam.x * 0.62 * scaleCss, Game.cam.y * 0.5 * scaleCss + 60, pal.hillNear, 0.78, 55);
+
+  // Vogelschwaerme ziehen durch
+  ctx.strokeStyle = pal.night ? "rgba(180,190,255,.5)" : "rgba(30,40,60,.35)";
+  ctx.lineWidth = 1.6;
+  for (let b = 0; b < 3; b++) {
+    const bx = ((Game.clock * (14 + b * 5) + b * 500) % (W + 260)) - 130;
+    const by = 60 + 34 * Math.sin(Game.clock * 0.25 + b * 2.1) - Game.cam.y * 0.1 * scaleCss;
+    const flap = Math.sin(Game.clock * 6 + b) * 5;
+    ctx.beginPath();
+    ctx.moveTo(bx - 7, by - flap * .4);
+    ctx.quadraticCurveTo(bx - 3, by - 4 - flap, bx, by);
+    ctx.quadraticCurveTo(bx + 3, by - 4 - flap, bx + 7, by - flap * .4);
+    ctx.stroke();
+  }
 }
 
-function drawRidge(ctx, W, H, off, yoff, col, baseFrac, amp) {
+/* Weiche Berge: dichte Abtastung statt Stuetzpunkte in 70px-Abstaenden */
+function drawRidge(ctx, W, H, off, yoff, col, baseFrac, amp, tents) {
+  const K = H / 900;
+  const f = wx => H * baseFrac - yoff -
+    (Math.sin(wx * 0.0032) + Math.sin(wx * 0.0091 + 2) * 0.45 + Math.sin(wx * 0.021 + 5) * 0.12) * amp * K;
   ctx.fillStyle = col;
   ctx.beginPath();
-  ctx.moveTo(0, H + 40);
-  const step = 70;
-  for (let x = -step; x <= W + step; x += step) {
-    const wx = x + off;
-    const t = Math.sin(wx * 0.004) + Math.sin(wx * 0.011 + 2) * 0.5;
-    ctx.lineTo(x, H * baseFrac - yoff - t * amp * (H / 900));
-  }
-  ctx.lineTo(W, H + 40);
+  ctx.moveTo(-12, H + 40);
+  const step = 10;
+  for (let x = -12; x <= W + 12; x += step) ctx.lineTo(x, f(x + off));
+  ctx.lineTo(W + 12, H + 40);
   ctx.closePath();
   ctx.fill();
+
+  // Winzige Campingzelte als Schattensilhouetten auf dem Ruecken (nur fern)
+  if (tents) {
+    const spacing = 380;
+    const k0 = Math.floor((off - 100) / spacing);
+    const n = Math.ceil((W + 320) / spacing) + 1;
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    for (let k = k0; k < k0 + n; k++) {
+      const j = ((k * 2654435761 >>> 0) % 997) / 997;
+      const sx = k * spacing + j * 220 - off;
+      const yy = f(sx + off) + 3;
+      const w = 14 + j * 10, h = 11 + j * 6;
+      ctx.beginPath();
+      ctx.moveTo(sx, yy);
+      ctx.lineTo(sx + w / 2, yy - h);
+      ctx.lineTo(sx + w, yy);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
 }
 
 function drawTiles(ctx, vw) {
@@ -970,24 +1053,83 @@ function drawTiles(ctx, vw) {
   }
 }
 
+/* ---------- Camping-Grafiken: Zelt + Lagerfeuer ---------- */
+function drawTent(ctx, x, baseY, w, h, col, active) {
+  // Koerper
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.moveTo(x, baseY); ctx.lineTo(x + w / 2, baseY - h); ctx.lineTo(x + w, baseY);
+  ctx.closePath(); ctx.fill();
+  // rechte Haelfte leicht abgeschlossen
+  ctx.fillStyle = "rgba(0,0,0,.2)";
+  ctx.beginPath();
+  ctx.moveTo(x + w / 2, baseY - h); ctx.lineTo(x + w, baseY); ctx.lineTo(x + w / 2, baseY);
+  ctx.closePath(); ctx.fill();
+  // Eingang
+  ctx.fillStyle = "rgba(15,23,42,.55)";
+  ctx.beginPath();
+  ctx.moveTo(x + w / 2, baseY - h * 0.5);
+  ctx.lineTo(x + w * 0.7, baseY);
+  ctx.lineTo(x + w * 0.3, baseY);
+  ctx.closePath(); ctx.fill();
+  // Firstlinie
+  ctx.strokeStyle = "rgba(255,255,255,.25)";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(x + w * .18, baseY - h * .12); ctx.lineTo(x + w / 2, baseY - h); ctx.stroke();
+  // Wimpel an der Spitze (nur aktiv)
+  if (active) {
+    const wave = Math.sin(Game.clock * 5) * 4;
+    ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x + w / 2, baseY - h); ctx.lineTo(x + w / 2, baseY - h - 16); ctx.stroke();
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.moveTo(x + w / 2, baseY - h - 16);
+    ctx.lineTo(x + w / 2 + 17 + wave, baseY - h - 11);
+    ctx.lineTo(x + w / 2, baseY - h - 5);
+    ctx.closePath(); ctx.fill();
+  }
+}
+
+function drawFlame(ctx, x, y, w, h, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.moveTo(x - w / 2, y);
+  ctx.quadraticCurveTo(x - w / 2, y - h * 0.5, x, y - h);
+  ctx.quadraticCurveTo(x + w / 2, y - h * 0.5, x + w / 2, y);
+  ctx.closePath(); ctx.fill();
+}
+
+function drawCampfire(ctx, x, baseY, burning, phase) {
+  if (burning) {
+    const f1 = Math.sin(Game.clock * 9 + phase);
+    const f2 = Math.sin(Game.clock * 13 + phase * 2.3);
+    // Feuerschein
+    ctx.globalAlpha = .2 + .06 * f1;
+    ctx.fillStyle = "#fb923c";
+    ctx.beginPath(); ctx.arc(x, baseY - 13, 27 + f1 * 3, 0, TAU); ctx.fill();
+    ctx.globalAlpha = 1;
+    // Flammen (3 Schichten)
+    drawFlame(ctx, x + f2, baseY - 4, 15, 26 + f1 * 4, "#f97316");
+    drawFlame(ctx, x - f2 * .6, baseY - 3, 10, 17 + f2 * 3, "#fbbf24");
+    drawFlame(ctx, x, baseY - 2, 5.5, 11 + f1 * 2, "#fef3c7");
+  }
+  // Holzscheite
+  ctx.fillStyle = "#7c4a21";
+  ctx.save();
+  ctx.translate(x, baseY - 2); ctx.rotate(.5);
+  ctx.fillRect(-13, -2.5, 26, 5);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(x, baseY); ctx.rotate(-.55);
+  ctx.fillRect(-13, -2.5, 26, 5);
+  ctx.restore();
+}
+
 function drawCheckpoints(ctx) {
   for (const c of Game.checkpoints) {
     const x = c.x, y = c.y;
-    ctx.fillStyle = "#94a3b8";
-    ctx.fillRect(x - 3, y - 116, 6, 116);
-    ctx.fillStyle = c.active ? "#22d3ee" : "#64748b";
-    const wave = Math.sin(Game.clock * 6) * 6;
-    ctx.beginPath();
-    ctx.moveTo(x + 3, y - 114);
-    ctx.lineTo(x + 52 + wave, y - 98);
-    ctx.lineTo(x + 3, y - 76);
-    ctx.closePath(); ctx.fill();
-    if (c.active) {
-      ctx.globalAlpha = .25 + .1 * Math.sin(Game.clock * 5);
-      ctx.fillStyle = "#22d3ee";
-      ctx.beginPath(); ctx.arc(x, y - 60, 42, 0, TAU); ctx.fill();
-      ctx.globalAlpha = 1;
-    }
+    drawTent(ctx, x - 52, y, 80, 60, c.active ? "#e0554d" : "#7b8aa0", c.active);
+    drawCampfire(ctx, x + 42, y, c.active, x * 0.03);
   }
 }
 
@@ -995,22 +1137,31 @@ function drawGoal(ctx) {
   const g = Game.goalE;
   const x = g.x, y = g.y;
   const pulse = g.reached ? 1 + .1 * Math.sin(Game.clock * 8) : 1;
-  ctx.fillStyle = "#cbd5e1";
-  ctx.fillRect(x - 4, y - 205, 8, 205);
-  ctx.fillStyle = "#f8fafc";
-  ctx.beginPath(); ctx.arc(x, y - 209, 9, 0, TAU); ctx.fill();
-  const wave = Math.sin(Game.clock * 4) * 8;
-  const grd = ctx.createLinearGradient(x, y - 200, x + 90, y - 120);
-  grd.addColorStop(0, "#3b82f6"); grd.addColorStop(1, "#22d3ee");
-  ctx.fillStyle = grd;
+  // grosses Ferien-Zelt
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(pulse, pulse);
+  ctx.translate(-x, -y);
+  drawTent(ctx, x - 64, y, 128, 94, "#3b82f6", true);
+  ctx.restore();
+  // Wimpel volle Hoehe uem das Zelt
+  const apexX = x, apexY = y - 94;
+  ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(apexX, apexY); ctx.lineTo(apexX, apexY - 30); ctx.stroke();
+  const wave = Math.sin(Game.clock * 4) * 7;
+  const grd = ctx.createLinearGradient(apexX, apexY - 30, apexX + 80, apexY);
+  grd.addColorStop(0, "#60a5fa"); grd.addColorStop(1, "#22d3ee");
+  ctx.fillStyle = g.reached ? "#22d3ee" : grd;
   ctx.beginPath();
-  ctx.moveTo(x + 4, y - 200 * pulse);
-  ctx.lineTo(x + 88 + wave, y - 174 * pulse);
-  ctx.lineTo(x + 4, y - 142 * pulse);
+  ctx.moveTo(apexX, apexY - 30);
+  ctx.lineTo(apexX + 42 + wave, apexY - 21);
+  ctx.lineTo(apexX, apexY - 10);
   ctx.closePath(); ctx.fill();
-  ctx.globalAlpha = .16 + .08 * Math.sin(Game.clock * 3);
+  // Lagerfeuer brennt immer am Ziel
+  drawCampfire(ctx, x + 66, y, true, 7);
+  ctx.globalAlpha = .14 + .06 * Math.sin(Game.clock * 3);
   ctx.fillStyle = "#22d3ee";
-  ctx.beginPath(); ctx.arc(x, y - 100, 62, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y - 40, 70, 0, TAU); ctx.fill();
   ctx.globalAlpha = 1;
 }
 
@@ -1160,6 +1311,21 @@ function drawPlayer(ctx) {
   }
   ctx.drawImage(img, -sprW / 2, -sprH / 2, sprW, sprH);
   ctx.restore();
+
+  // Hans campiert: Lagerfeuer mit Marshmallow neben ihm
+  if (p.camping) {
+    const fx = cx + p.facing * 44;
+    drawCampfire(ctx, fx, feetY, true, 2.4);
+    const wob = Math.sin(Game.clock * 2) * 2;
+    ctx.save();
+    ctx.translate(fx - p.facing * 8, feetY - 24 + wob);
+    ctx.rotate(p.facing * -0.55);
+    ctx.strokeStyle = "#8a5a34"; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(20, 10); ctx.stroke();
+    ctx.fillStyle = "#fffbeb";
+    ctx.beginPath(); ctx.arc(21, 11, 4.2, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
 
   if (p.powers.shield > 0) {
     const hue = (Game.clock * 340) % 360;

@@ -174,6 +174,16 @@ const fall = vm.runInThisContext(`(() => {
 })()`);
 check("Absturz kostet Leben + Respawns", fall.after === fall.before - 1 && fall.y < 15 * 48, JSON.stringify(fall));
 
+/* 11b. Camping-Bonus: Stillstand lohnt sich (Hans ist Camper) */
+load(0); step(5);
+const camp = vm.runInThisContext(`(() => {
+  const s0 = Game.score;
+  let camped = false;
+  for (let i = 0; i < 60 * 8; i++) { update(1/60); if (Game.player.camping) camped = true; }
+  return { camped, gain: Game.score - s0, smoke: Game.particles.length >= 0 };
+})()`);
+check("Camping-Bonus nach 3.2s Stillstand", camp.camped && camp.gain >= 100, JSON.stringify(camp));
+
 /* 12. Bot-Durchlauf je Level: Fortschritt/Abgeschlossen-Status
        (Bot mit seed-deterministischem Zufalls-Timing; Level 1 muss
         absolvierbar sein, 2+3 sind Info-Werte -- absichtlich schwerer) */
