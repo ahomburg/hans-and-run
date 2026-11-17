@@ -117,6 +117,10 @@ html, body {
   animation: pop .35s var(--ch-spring);
 }
 .panel.hidden { display: none; }
+
+/* Nur das Startpanel: leichter Himmelston (Nutzerwunsch) */
+#panel-start { background: #E1F3FB; }
+
 @keyframes pop {
   from { transform: scale(.92) rotate(-1.5deg); opacity: 0; }
   to   { transform: scale(1) rotate(0deg); opacity: 1; }
