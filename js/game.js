@@ -458,6 +458,7 @@ const Game = {
     this.setState("play");
   },
   setState(s) {
+    if (s !== "play") this.shake = 0;   // Shake nur im Spiel halten – sonst zittert das Bild endlos
     this.state = s;
     UI.showState(s, this);
     if (s === "play") { AudioSys.resume(); AudioSys.startMusic(); }
@@ -1458,7 +1459,7 @@ const UI = {
         const info = ITEM_INFO[kind];
         const pct = (p.powers[kind] / info.dur) * 100;
         html += `<div class="pu-chip"><span>${info.icon}</span><span>${info.label}</span>` +
-                `<span class="bar"><i style="width:${pct.toFixed(1)}%;background:${info.col}"></i></span></div>`;
+                `<span class="bar"><i style="width:${pct.toFixed(1)}%"></i></span></div>`;
       }
     }
     bar.innerHTML = html;
