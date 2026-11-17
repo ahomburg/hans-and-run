@@ -1295,7 +1295,9 @@ function drawPlayer(ctx) {
   // 4-Phasen-Zyklus: Schritt 1 - Idle - Schritt 2 - Idle (Idle als Zwischenbild)
   const cycle = [Sprites.walk1, Sprites.idle, Sprites.walk2, Sprites.idle];
   const frame = Math.floor(p.animT) % 4;
-  let img = !p.onGround || moving ? cycle[frame] : Sprites.idle;
+  // In der Luft immer eine Schrittposition (niemals Idle), passend zur Bewegung wechselnd
+  let img = !p.onGround ? (frame % 2 === 0 ? Sprites.walk1 : Sprites.walk2)
+           : moving ? cycle[frame] : Sprites.idle;
   if (p.facing < 0) img = img === Sprites.walk1 ? Sprites.walk1L : img === Sprites.walk2 ? Sprites.walk2L : Sprites.idleL;
 
   const tilt = clamp(p.vx / 2600, -.12, .12);
