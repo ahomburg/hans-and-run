@@ -1292,8 +1292,10 @@ function drawPlayer(ctx) {
   ctx.globalAlpha = 1;
 
   const moving = Math.abs(p.vx) > 30;
-  const frame = Math.floor(p.animT * 0.5) % 2;   // ~2 Schrittwechsel/Sek. bei Normaltempo
-  let img = !p.onGround || moving ? (frame === 0 ? Sprites.walk1 : Sprites.walk2) : Sprites.idle;
+  // 4-Phasen-Zyklus: Schritt 1 - Idle - Schritt 2 - Idle (Idle als Zwischenbild)
+  const cycle = [Sprites.walk1, Sprites.idle, Sprites.walk2, Sprites.idle];
+  const frame = Math.floor(p.animT) % 4;
+  let img = !p.onGround || moving ? cycle[frame] : Sprites.idle;
   if (p.facing < 0) img = img === Sprites.walk1 ? Sprites.walk1L : img === Sprites.walk2 ? Sprites.walk2L : Sprites.idleL;
 
   const tilt = clamp(p.vx / 2600, -.12, .12);
