@@ -56,8 +56,8 @@ const gameState = () => JSON.parse(vm.runInThisContext(
 const load = i => run(`Game.loadLevel(${i}); Game.lives = 3; Game.state = "play"; Input.left=Input.right=Input.jump=Input.sprint=Input.down=false;`);
 const step = n => { for (let i = 0; i < n; i++) run(`update(1/60)`); };
 
-/* 1. Alle 3 Level bauen + Spieler landet/steht am Start */
-for (let i = 0; i < 3; i++) {
+/* 1. Alle Level bauen + Spieler landet/steht am Start */
+for (let i = 0; i < LEVEL_DEFS.length; i++) {
   load(i); step(40);
   const S = gameState();
   check(`Level ${i + 1} (${Game.level.name}): laedt + Spieler steht stabil`, S.og === true && S.y > 0 && S.y < 15 * 48, JSON.stringify(S));
@@ -189,7 +189,7 @@ check("Camping-Bonus nach 3.2s Stillstand", camp.camped && camp.gain >= 100, JSO
         absolvierbar sein, 2+3 sind Info-Werte -- absichtlich schwerer) */
 const SEED = +(process.env.BOT_SEED || 3);
 vm.runInThisContext(`let __s = ${SEED}; Math.random = () => { __s = (__s * 1664525 + 1013904223) >>> 0; return __s / 4294967296; };`);
-for (let lv = 1; lv <= 3; lv++) {
+for (let lv = 1; lv <= LEVEL_DEFS.length; lv++) {
   const bot = vm.runInThisContext(`(() => {
     Game.loadLevel(${lv - 1}); Game.lives = 99; Game.state = "play";
     let px = 0, deaths = 0, lastLives = 99, done = false;

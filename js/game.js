@@ -411,6 +411,64 @@ const LEVEL_DEFS = [
       a.coinRow(203, 12, 4); a.coinRow(211, 11, 4); a.coinRow(219, 12, 4);
       a.goal(232);
     }
+  },
+  {
+    // Camper Hans in Manhattan: Blaue Stunde, Skyline-Silhouetten, Asphalt-Strassen.
+    // Luecken = Avenuen, Plattformen = Feuertreppen, Flyer = Tauben.
+    name: "Manhattan", width: 230, palette: {
+      skyA: "#12224e", skyB: "#ff9e6d",
+      hillNear: "#2e3950", hillFar: "#1f2940", mount: "#151d33",
+      grass: "#9aa3ad", dirt: "#5a6270", dirtDark: "#454c59",
+      cloud: "rgba(255,170,140,.18)", night: true,
+    },
+    build(a) {
+      a.ground(0, 22);
+      a.enemy(14, "walker");
+      a.coinRow(8, 11, 5);
+      a.plat(24, 12, 2); a.plat(27, 10, 2);          // 1. Avenue 23-28
+      a.coinRow(24, 10, 5);
+      a.ground(29, 48); a.checkpoint(31);
+      a.crate(35, 13, 2, 2); a.coinRow(35, 10, 2);
+      a.flyer(41, 9); a.enemy(45, "walker");
+      a.item(47, 11, "speed");
+      a.plat(50, 12, 2); a.plat(53, 10, 2);          // 2. Avenue 49-56
+      a.flyer(54, 8);
+      a.item(52, 12, "wings");
+      a.ground(57, 78); a.checkpoint(59);
+      a.spike(64, 3); a.plat(64, 11, 3); a.coinRow(64, 9, 3);
+      a.enemy(70, "spiker");
+      a.coinRow(72, 12, 4);
+      a.item(75, 11, "magnet");
+      a.coinArc(79, 10, 6);                          // 3. Avenue 79-84 (Sprint!)
+      a.plat(83, 12, 2);
+      a.ground(86, 108); a.checkpoint(88);
+      a.crate(92, 13, 1, 2); a.crate(96, 13, 2, 2); a.coinRow(92, 9, 8);
+      a.enemy(100, "walker"); a.enemy(104, "walker");
+      a.flyer(102, 8); a.flyer(106, 10);
+      a.item(107, 11, "heart");
+      a.plat(109, 11, 2); a.plat(113, 9, 2); a.plat(117, 11, 2);   // 4. Avenue 109-119
+      a.coinRow(110, 9, 2); a.coinRow(114, 7, 2); a.coinRow(118, 9, 2);
+      a.flyer(115, 7);
+      a.ground(120, 142); a.checkpoint(122);
+      a.spike(126, 4); a.plat(126, 11, 4); a.coinRow(126, 9, 4);
+      a.enemy(134, "spiker"); a.enemy(138, "walker");
+      a.item(140, 11, "shield");
+      a.coinArc(143, 10, 10);                        // Central-Park-Sprung 143-152
+      a.plat(145, 12, 2); a.plat(149, 10, 2); a.plat(153, 11, 2);
+      a.flyer(147, 9); a.flyer(152, 8);
+      a.ground(157, 180); a.checkpoint(159);
+      a.coinRow(162, 12, 6);
+      a.enemy(166, "walker"); a.enemy(170, "spiker");
+      a.flyer(174, 9); a.enemy(178, "walker");
+      a.coinRow(172, 10, 4);
+      a.plat(182, 12, 2); a.plat(186, 10, 2); a.plat(190, 12, 2);  // Finale-Avenues
+      a.flyer(184, 9); a.flyer(192, 9);
+      a.coinRow(182, 10, 2); a.coinRow(186, 8, 2); a.coinRow(190, 10, 2);
+      a.ground(193, 229); a.checkpoint(195);
+      a.enemy(198, "walker"); a.enemy(203, "spiker"); a.enemy(208, "walker");
+      a.item(201, 11, "speed");
+      a.goal(222);
+    }
   }
 ];
 

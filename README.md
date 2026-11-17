@@ -8,7 +8,7 @@ sammle Münzen und Power-ups — und wart zwischendurch einfach mal am Lagerfeue
 
 ## Features
 
-- **3 Level:** Wiese, Nachtlauf, Himmelspfad
+- **4 Level:** Wiese, Nachtlauf, Himmelspfad und Manhattan
 - **5 Power-ups:** Schild, Doppelsprung, Turbo und mehr
 - **Camping-Bonus:** Still stehen lohnt sich — Hans macht Urlaub am Lagerfeuer (+25 Punkte/Sek.)
 - **Combo-System:** Gegner in Serie stampfen bringt Extra-Punkte
