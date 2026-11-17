@@ -1011,9 +1011,9 @@ function drawBackground(ctx, W, H, scaleCss) {
 
   // Berge + Huegel (Parallax), ferne Ebene mit Camping-Zelten — oder Skyline im Stadt-Level
   if (pal.city) {
-    drawSkyline(ctx, W, H, Game.cam.x * 0.18 * scaleCss, Game.cam.y * 0.18 * scaleCss, pal.mount, 0.42, .14);
-    drawSkyline(ctx, W, H, Game.cam.x * 0.4 * scaleCss, Game.cam.y * 0.32 * scaleCss + 30, pal.hillFar, 0.6, .32);
-    drawSkyline(ctx, W, H, Game.cam.x * 0.62 * scaleCss, Game.cam.y * 0.5 * scaleCss + 60, pal.hillNear, 0.78, .5);
+    drawSkyline(ctx, W, H, Game.cam.x * 0.18 * scaleCss, Game.cam.y * 0.18 * scaleCss, pal.mount, 0.42, .14, 1);     // ferne Reihe: schmal
+    drawSkyline(ctx, W, H, Game.cam.x * 0.4 * scaleCss, Game.cam.y * 0.32 * scaleCss + 30, pal.hillFar, 0.6, .32, 1.5);   // Mitte: breiter
+    drawSkyline(ctx, W, H, Game.cam.x * 0.62 * scaleCss, Game.cam.y * 0.5 * scaleCss + 60, pal.hillNear, 0.78, .5, 2.2); // vorn: am breitesten
   } else {
     drawRidge(ctx, W, H, Game.cam.x * 0.18 * scaleCss, Game.cam.y * 0.18 * scaleCss, pal.mount, 0.42, 120);
     drawRidge(ctx, W, H, Game.cam.x * 0.4 * scaleCss, Game.cam.y * 0.32 * scaleCss + 30, pal.hillFar, 0.6, 85, true);
@@ -1036,32 +1036,33 @@ function drawBackground(ctx, W, H, scaleCss) {
 }
 
 /* Skyline (Stadt-Level): Hochhaus-Silhouetten mit beleuchteten Fenstern.
-   Deterministisch per Hash — gleiche Gebaeude bei jedem Frame/Aufruf. */
-function drawSkyline(ctx, W, H, off, yoff, col, baseFrac, winAlpha) {
+   Deterministisch per Hash — gleiche Gebaeude bei jedem Frame/Aufruf.
+   size = Tiefen-Skala: 1 ferne Reihe, groesser = naehere/breitere Reihe. */
+function drawSkyline(ctx, W, H, off, yoff, col, baseFrac, winAlpha, size) {
   const K = H / 900;
   const hash = k => { let x = (k * 2654435761) >>> 0; x ^= x >>> 13; return ((x >>> 0) % 1000) / 1000; };
-  const spacing = 74 * K;
-  const k0 = Math.floor((off - 120) / spacing);
-  const n = Math.ceil((W + 260) / spacing) + 1;
+  const spacing = 74 * K * size;
+  const k0 = Math.floor((off - 120 * size) / spacing);
+  const n = Math.ceil((W + 260 * size) / spacing) + 1;
   const wins = [];
   ctx.fillStyle = col;
   for (let k = k0; k < k0 + n; k++) {
     const jw = hash(k + 31), jx = hash(k * 7 + 13), jh = hash(k * 17 + 5);
-    const w = (34 + jw * 28) * K;
-    const x = k * spacing + jx * 14 - off;
-    const bh = (60 + jh * 175) * K;
+    const w = (34 + jw * 28) * K * size;
+    const x = k * spacing + jx * 14 * size - off;
+    const bh = (60 + jh * 175) * K * size;
     const top = H * baseFrac - yoff - bh;
     ctx.fillRect(x, top, w, H - top + 40);
     // Fenster: grobes Raster, einzelne Lichter deterministisch verteilt
-    const rows = Math.max(2, Math.floor(bh / (15 * K)));
-    const cols = Math.max(2, Math.floor(w / (11 * K)));
+    const rows = Math.max(2, Math.floor(bh / (15 * K * size)));
+    const cols = Math.max(2, Math.floor(w / (11 * K * size)));
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
       const jr = hash(k * 131 + r * 17 + c * 3 + 7);
-      if (jr < 0.26) wins.push(x + (c + 0.28) * (w / cols), top + 6 * K + r * 15 * K);
+      if (jr < 0.26) wins.push(x + (c + 0.28) * (w / cols), top + 6 * K * size + r * 15 * K * size);
     }
   }
   ctx.fillStyle = `rgba(255,214,150,${winAlpha})`;
-  for (let i = 0; i < wins.length; i += 2) ctx.fillRect(wins[i], wins[i + 1], 4 * K, 6 * K);
+  for (let i = 0; i < wins.length; i += 2) ctx.fillRect(wins[i], wins[i + 1], 4 * K * size, 6 * K * size);
 }
 
 /* Weiche Berge: dichte Abtastung statt Stuetzpunkte in 70px-Abstaenden */
