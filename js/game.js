@@ -130,6 +130,7 @@ const Input = {
         this[k] = true;
       }
       if (e.code === "KeyP" || e.code === "Escape") Game.togglePause();
+      if (e.code === "KeyL") UI.toggleDebug();
       if (e.code === "KeyM") UI.toggleMute();
       if (e.code === "KeyR" && (Game.state === "play" || Game.state === "pause")) Game.restartLevel();
     });
@@ -1480,7 +1481,34 @@ const UI = {
     this.el("btn-tryagain").onclick = () => { Game.startNewGame(); Game.setState("play"); };
     this.el("btn-quit2").onclick = () => { Game.setState("start"); this.updateBest(); };
     this.el("btn-win-restart").onclick = () => { Game.startNewGame(); Game.setState("play"); };
+    this.initDebug();
     this.updateBest();
+  },
+  initDebug() {
+    // Level-Auswahl: pro Level ein Button; waehrend laufendem Spiel
+    // wird das Level nur gewechselt, sonst wie ein frischer Spielstart
+    const wrap = this.el("debug-levels");
+    LEVEL_DEFS.forEach((ld, i) => {
+      const b = document.createElement("button");
+      b.className = "ch-btn";
+      b.textContent = `Level ${i + 1}: ${ld.name}`;
+      b.onclick = () => {
+        if (Game.state !== "play" && Game.state !== "pause") {
+          Game.score = 0; Game.coins = 0; Game.lives = 3; Game.totalTime = 0;
+        }
+        Game.loadLevel(i);
+        Game.setState("play");
+        UI.toast("Debug: Level " + (i + 1) + " — " + Game.level.name);
+      };
+      wrap.appendChild(b);
+    });
+    // ?debug=1 in der URL oeffnet das Panel automatisch
+    if (typeof location !== "undefined" && new URLSearchParams(location.search).get("debug") === "1") {
+      this.el("debug-panel").classList.remove("hidden");
+    }
+  },
+  toggleDebug() {
+    this.el("debug-panel").classList.toggle("hidden");
   },
   updateBest() {
     const best = +localStorage.getItem("handrun-best") || 0;

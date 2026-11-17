@@ -25,6 +25,7 @@ sammle Münzen und Power-ups — und wart zwischendurch einfach mal am Lagerfeue
 | `P` | Pause |
 | `M` | Ton an/aus |
 | `R` | Level neu aufbauen |
+| `L` | Debug-Panel: Level direkt auswaehlen (auch per `?debug=1` in der URL) |
 
 Auf dem Touchscreen: Buttons unten links (laufen) und rechts (springen). Tastatur-Hinweise
 werden dort automatisch ausgeblendet.

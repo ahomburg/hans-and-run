@@ -94,6 +94,21 @@ html, body {
 }
 
 /* ---------- Overlays / Menues ---------- */
+/* ---------- Debug: Level-Auswahl ---------- */
+#debug-panel {
+  position: absolute; top: 66px; left: 18px; z-index: 12;
+  background: var(--ch-paper);
+  border: 2px solid var(--ch-night);
+  border-radius: var(--ch-radius-md);
+  box-shadow: var(--ch-shadow-sticker);
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  font-size: 13px; color: var(--ch-night);
+}
+#debug-panel .hint { font-size: 11px; color: var(--ch-night-soft); }
+#debug-levels { display: flex; flex-direction: column; gap: 6px; }
+
+/* ---------- Overlays / Menues ---------- */
 .overlay {
   position: absolute; inset: 0; z-index: 10;
   display: flex; align-items: center; justify-content: center;
