@@ -1,0 +1,71 @@
+{
+  "$meta": {
+    "name": "Camper Hans Corporate Identity",
+    "version": "1.2.1",
+    "language": "de",
+    "mood": "Verspielt, lustig, Natur & Camping, bunt & kindlich",
+    "mascot": "Camper Hans",
+    "brandAssets": {
+      "logoEmblem": "images/logos/logo-hans-emblem.png",
+      "logoPortrait": "images/logos/logo-hans-portrait.png",
+      "heroBackground": "images/background.png",
+      "heroBackgroundWithHans": "images/background-cover-mit-Hans2.png",
+      "bookCover": "images/Buchcover.jpg"
+    }
+  },
+  "color": {
+    "cream":      { "value": "#FFF6E3", "usage": "Seitenhintergrund" },
+    "paper":      { "value": "#FFFDF5", "usage": "Karten- und Flächenhintergrund" },
+    "night":      { "value": "#22333B", "usage": "Standardtext, Outlines" },
+    "nightSoft":  { "value": "#4E5D66", "usage": "Sekundärtext" },
+    "forest":     { "value": "#4E9F3D", "usage": "Primärfarbe, Hauptbuttons" },
+    "forestDark": { "value": "#37762B", "usage": "Button-Hover, dunkle Flächen" },
+    "forestSoft": { "value": "#E4F2DC", "usage": "Sanfte Grüntöne, Info-Flächen" },
+    "sky":        { "value": "#6FC3E8", "usage": "Akzent, Sekundärbuttons, Wasser" },
+    "lake":       { "value": "#2F7FA6", "usage": "Sky-Hover, Links auf hellem Grund" },
+    "skySoft":    { "value": "#E1F3FB", "usage": "Info-Hintergründe" },
+    "sun":        { "value": "#FFCB3C", "usage": "Akzent, Highlights, Sterne" },
+    "sunDark":    { "value": "#F0AE1F", "usage": "Sun-Hover" },
+    "sunSoft":    { "value": "#FFF3CE", "usage": "Highlight-Flächen" },
+    "campfire":   { "value": "#E8623C", "usage": "Warmes Rot, Feuer, Fehler" },
+    "campfireDark": { "value": "#C6451F", "usage": "Campfire-Hover, Fehlertext" },
+    "fireSoft":   { "value": "#FCE3D9", "usage": "Fehler-Hintergründe" },
+    "wood":       { "value": "#8B5A2B", "usage": "Braun, Holz, Erde, Footer" },
+    "woodDark":   { "value": "#6E431F", "usage": "Wood-Hover" },
+    "woodSoft":   { "value": "#F3E6D7", "usage": "Braune Sanftflächen" },
+    "berry":      { "value": "#B14E8D", "usage": "Bonusfarbe für Spiele: Items, Power-ups" },
+    "berrySoft":  { "value": "#F9E1F1", "usage": "Berry-Flächen" }
+  },
+  "font": {
+    "display": { "family": "'Lora', serif", "weights": [500, 600, 700], "usage": "Überschriften, Buttons, Badges, Logos, Game-Titel" },
+    "body":    { "family": "'Nunito', sans-serif", "weights": [400, 600, 700], "usage": "Fließtext, UI, Formulare" },
+    "hand":    { "family": "'Caveat', cursive", "weights": [500, 600, 700], "usage": "Hans' handgeschriebene Notizen, Sprüche, Tooltips" },
+    "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Nunito:wght@400;600;700&family=Caveat:wght@500;600;700&display=swap"
+  },
+  "size": {
+    "text": { "xs": "0.75rem", "sm": "0.875rem", "md": "1rem", "lg": "1.25rem", "xl": "1.5rem", "2xl": "2rem", "3xl": "2.5rem", "4xl": "3.25rem" },
+    "space": { "3xs": "4px", "2xs": "8px", "xs": "12px", "sm": "16px", "md": "24px", "lg": "32px", "xl": "48px", "2xl": "64px", "3xl": "96px" },
+    "radius": { "sm": "8px", "md": "14px", "lg": "20px", "xl": "28px", "pill": "999px" },
+    "border": { "thin": "2px", "thick": "3px" }
+  },
+  "shadow": {
+    "soft":  "0 4px 14px rgba(34, 51, 59, 0.12)",
+    "pop":   "0 6px 0 rgba(34, 51, 59, 0.9)",
+    "sticker": "0 8px 0 rgba(34, 51, 59, 0.85)"
+  },
+  "motion": {
+    "fast": "120ms",
+    "normal": "200ms",
+    "slow": "300ms",
+    "spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+  },
+  "tone": {
+    "voice": ["freundlich", "verspielt", "lustig", "mutmachend"],
+    "duForm": true,
+    "spruchBeispiele": [
+      "Zelt auf, Lächeln an!",
+      "Hans sagt: Draußen ist der beste Ort.",
+      "Kaffee ans Lagerfeuer, wir starten!"
+    ]
+  }
+}
