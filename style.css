@@ -256,6 +256,13 @@ html, body {
   .mascot { width: 96px; height: 96px; }
 }
 
+/* Touch/Mobile (wie Touch-Button-Erkennung: Coarse-Pointer) */
+@media (pointer: coarse), (any-pointer: coarse) {
+  .hud-label { display: none; }      /* nur die Punktzahl statt 'Punkte 123' */
+  #hud-level { display: none; }      /* Level-Name weglassen, Platz fuer HUD */
+  .controls-hint { display: none; }  /* Tastenerklaerung ergibt auf Touch keinen Sinn */
+}
+
 /* Reduced Motion: keine Pop-/Toast-Animationen */
 @media (prefers-reduced-motion: reduce) {
   .panel, .toast { animation: none; }

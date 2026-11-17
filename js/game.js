@@ -1456,8 +1456,8 @@ const UI = {
   },
   setLevel(idx, name) { this.el("hud-level").textContent = `Level ${idx + 1} · ${name}`; },
   updateHUD(g) {
-    if (g.score !== this.lastScore) { this.el("hud-score").textContent = `Punkte ${g.score}`; this.lastScore = g.score; }
-    if (g.coins !== this.lastCoins) { this.el("hud-coins").textContent = `Münzen ${g.coins}`; this.lastCoins = g.coins; }
+    if (g.score !== this.lastScore) { this.el("hud-score").innerHTML = `<span class="hud-label">Punkte</span> ${g.score}`; this.lastScore = g.score; }
+    if (g.coins !== this.lastCoins) { this.el("hud-coins").textContent = `🪙 ${g.coins}`; this.lastCoins = g.coins; }
     if (g.lives !== this.lastLives) {
       this.el("hud-lives").textContent = g.lives > 0 ? "❤".repeat(g.lives) : "—";
       this.lastLives = g.lives;
