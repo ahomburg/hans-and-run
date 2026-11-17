@@ -156,8 +156,8 @@ const Input = {
 
 /* =====================================================================
    SPRITES — Hans_walking1/2 (Schrittfolge) / Hans_not_walking (Stand),
-   beschnitten + gespiegelt. Achtung: Stand-Bild schaut nach LINKS,
-   wird deshalb fuer die nach rechts schauende Idle-Variante geflippt.
+   beschnitten + gespiegelt. Alle Bilder schauen nach RECHTS,
+   die links laufende/idle Variante wird per Flip erzeugt.
    ===================================================================== */
 const Sprites = {
   walk1: null, walk2: null, idle: null,
@@ -206,8 +206,8 @@ const Sprites = {
     make("Hans_walking1.png", true,  c => this.walk1L = c);
     make("Hans_walking2.png", false, c => this.walk2 = c);
     make("Hans_walking2.png", true,  c => this.walk2L = c);
-    make("Hans_not_walking.png", true,  c => this.idle = c);    // Bild schaut nach links -> flippen
-    make("Hans_not_walking.png", false, c => this.idleL = c);
+    make("Hans_not_walking.png", false, c => this.idle = c);
+    make("Hans_not_walking.png", true,  c => this.idleL = c);
   }
 };
 
@@ -1292,7 +1292,7 @@ function drawPlayer(ctx) {
   ctx.globalAlpha = 1;
 
   const moving = Math.abs(p.vx) > 30;
-  const frame = Math.floor(p.animT * 2) % 2;
+  const frame = Math.floor(p.animT * 0.5) % 2;   // ~2 Schrittwechsel/Sek. bei Normaltempo
   let img = !p.onGround || moving ? (frame === 0 ? Sprites.walk1 : Sprites.walk2) : Sprites.idle;
   if (p.facing < 0) img = img === Sprites.walk1 ? Sprites.walk1L : img === Sprites.walk2 ? Sprites.walk2L : Sprites.idleL;
 
