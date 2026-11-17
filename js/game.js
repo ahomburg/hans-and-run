@@ -1331,15 +1331,14 @@ function drawPlayer(ctx) {
   if (p.camping) {
     const fx = cx + p.facing * 44;
     drawCampfire(ctx, fx, feetY, true, 2.4);
+    // Marshmallow-Stock in Hans' Hand, Spitze mit Marshmallow ueber dem Feuer
     const wob = Math.sin(Game.clock * 2) * 2;
-    ctx.save();
-    ctx.translate(fx - p.facing * 8, feetY - 24 + wob);
-    ctx.rotate(p.facing * -0.55);
+    const hx = cx + p.facing * 16, hy = feetY - 42 + wob * .5;   // Hand
+    const mx = fx - p.facing * 3, my = feetY - 28 + wob;         // Spitze ueberm Feuer
     ctx.strokeStyle = "#8a5a34"; ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(20, 10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(mx, my); ctx.stroke();
     ctx.fillStyle = "#fffbeb";
-    ctx.beginPath(); ctx.arc(21, 11, 4.2, 0, TAU); ctx.fill();
-    ctx.restore();
+    ctx.beginPath(); ctx.arc(mx, my, 4.2, 0, TAU); ctx.fill();
   }
 
   if (p.powers.shield > 0) {
