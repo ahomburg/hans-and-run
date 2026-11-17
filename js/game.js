@@ -158,15 +158,15 @@ const Input = {
 };
 
 /* =====================================================================
-   SPRITES — Hans_walking1/2 (Schrittfolge) / Hans_not_walking (Stand),
-   beschnitten + gespiegelt. Alle Bilder schauen nach RECHTS,
-   die links laufende/idle Variante wird per Flip erzeugt.
+   SPRITES — Hans_walking1/2 (Schrittfolge) / Hans_not_walking (Stand) /
+   Hans_mashmellow (Camping), beschnitten + gespiegelt.
+   Alle Bilder schauen nach RECHTS, links = per Flip erzeugt.
    ===================================================================== */
 const Sprites = {
-  walk1: null, walk2: null, idle: null,
-  walk1L: null, walk2L: null, idleL: null, loaded: false,
+  walk1: null, walk2: null, idle: null, camp: null,
+  walk1L: null, walk2L: null, idleL: null, campL: null, loaded: false,
   load(done) {
-    let pending = 6;
+    let pending = 8;
     const finish = () => { if (--pending === 0) { this.loaded = true; done(); } };
     const crop = (img, flip) => {
       // Alpha-Boundingbox bestimmen und auf quadratische Flaeche zuschneiden
@@ -211,6 +211,8 @@ const Sprites = {
     make("Hans_walking2.png", true,  c => this.walk2L = c);
     make("Hans_not_walking.png", false, c => this.idle = c);
     make("Hans_not_walking.png", true,  c => this.idleL = c);
+    make("Hans_mashmellow.png", false, c => this.camp = c);
+    make("Hans_mashmellow.png", true,  c => this.campL = c);
   }
 };
 
@@ -1300,10 +1302,14 @@ function drawPlayer(ctx) {
   // 4-Phasen-Zyklus: Schritt 1 - Idle - Schritt 2 - Idle (Idle als Zwischenbild)
   const cycle = [Sprites.walk1, Sprites.idle, Sprites.walk2, Sprites.idle];
   const frame = Math.floor(p.animT) % 4;
-  // In der Luft immer eine Schrittposition (niemals Idle), passend zur Bewegung wechselnd
-  let img = !p.onGround ? (frame % 2 === 0 ? Sprites.walk1 : Sprites.walk2)
+  // Beim Camping die Marshmallow-Figur zeigen, sonst Schritt-/Idle-Logik
+  let img = p.camping ? Sprites.camp
+           : !p.onGround ? (frame % 2 === 0 ? Sprites.walk1 : Sprites.walk2)
            : moving ? cycle[frame] : Sprites.idle;
-  if (p.facing < 0) img = img === Sprites.walk1 ? Sprites.walk1L : img === Sprites.walk2 ? Sprites.walk2L : Sprites.idleL;
+  if (p.facing < 0) img = img === Sprites.walk1 ? Sprites.walk1L
+                      : img === Sprites.walk2 ? Sprites.walk2L
+                      : img === Sprites.camp ? Sprites.campL
+                      : Sprites.idleL;
 
   const tilt = clamp(p.vx / 2600, -.12, .12);
   ctx.save();
