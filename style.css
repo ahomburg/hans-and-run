@@ -261,6 +261,7 @@ html, body {
   .hud-label { display: none; }      /* nur die Punktzahl statt 'Punkte 123' */
   #hud-level { display: none; }      /* Level-Name weglassen, Platz fuer HUD */
   .controls-hint { display: none; }  /* Tastenerklaerung ergibt auf Touch keinen Sinn */
+  .hud-right { flex-direction: column; align-items: flex-end; }  /* Zeit ueber Herzen */
 }
 
 /* Reduced Motion: keine Pop-/Toast-Animationen */
