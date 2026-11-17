@@ -118,8 +118,9 @@ html, body {
 }
 .panel.hidden { display: none; }
 
-/* Nur das Startpanel: leichter Himmelston (Nutzerwunsch) */
-#panel-start { background: #E1F3FB; }
+/* Alle Menue-Panels (Start, Pause, Level geschafft, Game Over, Win):
+   leichter Himmelston Himmel-Soft #E1F3FB (Nutzerwunsch) */
+.panel { background: #E1F3FB; }
 
 @keyframes pop {
   from { transform: scale(.92) rotate(-1.5deg); opacity: 0; }
