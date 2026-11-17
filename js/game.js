@@ -155,12 +155,15 @@ const Input = {
 };
 
 /* =====================================================================
-   SPRITES — Hans1 (Schritt) / Hans2 (Winken), beschnitten + gespiegelt
+   SPRITES — Hans_walking1/2 (Schrittfolge) / Hans_not_walking (Stand),
+   beschnitten + gespiegelt. Achtung: Stand-Bild schaut nach LINKS,
+   wird deshalb fuer die nach rechts schauende Idle-Variante geflippt.
    ===================================================================== */
 const Sprites = {
-  walk: null, idle: null, walkL: null, idleL: null, loaded: false,
+  walk1: null, walk2: null, idle: null,
+  walk1L: null, walk2L: null, idleL: null, loaded: false,
   load(done) {
-    let pending = 4;
+    let pending = 6;
     const finish = () => { if (--pending === 0) { this.loaded = true; done(); } };
     const crop = (img, flip) => {
       // Alpha-Boundingbox bestimmen und auf quadratische Flaeche zuschneiden
@@ -199,10 +202,12 @@ const Sprites = {
       img.onerror = () => { console.error("Sprite-Fehler:", src); finish(); };
       img.src = src;
     };
-    make("Hans1.png", false, c => this.walk = c);
-    make("Hans1.png", true, c => this.walkL = c);
-    make("Hans2.png", false, c => this.idle = c);
-    make("Hans2.png", true, c => this.idleL = c);
+    make("Hans_walking1.png", false, c => this.walk1 = c);
+    make("Hans_walking1.png", true,  c => this.walk1L = c);
+    make("Hans_walking2.png", false, c => this.walk2 = c);
+    make("Hans_walking2.png", true,  c => this.walk2L = c);
+    make("Hans_not_walking.png", true,  c => this.idle = c);    // Bild schaut nach links -> flippen
+    make("Hans_not_walking.png", false, c => this.idleL = c);
   }
 };
 
@@ -1288,8 +1293,8 @@ function drawPlayer(ctx) {
 
   const moving = Math.abs(p.vx) > 30;
   const frame = Math.floor(p.animT * 2) % 2;
-  let img = p.onGround ? (moving && frame === 0 ? Sprites.walk : Sprites.idle) : Sprites.walk;
-  if (p.facing < 0) img = img === Sprites.walk ? Sprites.walkL : Sprites.idleL;
+  let img = !p.onGround || moving ? (frame === 0 ? Sprites.walk1 : Sprites.walk2) : Sprites.idle;
+  if (p.facing < 0) img = img === Sprites.walk1 ? Sprites.walk1L : img === Sprites.walk2 ? Sprites.walk2L : Sprites.idleL;
 
   const tilt = clamp(p.vx / 2600, -.12, .12);
   ctx.save();
