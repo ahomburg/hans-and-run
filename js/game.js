@@ -147,9 +147,12 @@ const Input = {
     bind("btn-left", "left");
     bind("btn-right", "right");
     bind("btn-jump", "jump");
-    if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-      document.getElementById("touch").classList.remove("hidden");
-    }
+    // Touch-Buttons nur auf echten Touchscreens (Android/iOS: Haupt-Pointer grob),
+    // nicht auf Touch-Laptops mit Maus als Primaergeraet
+    const isTouch = window.matchMedia
+      ? matchMedia("(pointer: coarse), (any-pointer: coarse)").matches
+      : "ontouchstart" in window;
+    if (isTouch) document.getElementById("touch").classList.remove("hidden");
   },
   consumeJump() { const j = this.jumpPressed; this.jumpPressed = false; return j; }
 };
@@ -1284,12 +1287,14 @@ function drawPlayer(ctx) {
   const cx = p.x + p.w / 2;
   const feetY = p.y + p.h;
 
-  // Schatten
-  ctx.globalAlpha = .18;
-  ctx.fillStyle = "#000";
-  ctx.beginPath();
-  ctx.ellipse(cx, feetY + 4, 26, 7, 0, 0, TAU); ctx.fill();
-  ctx.globalAlpha = 1;
+  // Schatten nur am Boden — beim Sprung kein Schatten
+  if (p.onGround) {
+    ctx.globalAlpha = .18;
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.ellipse(cx, feetY + 4, 26, 7, 0, 0, TAU); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
 
   const moving = Math.abs(p.vx) > 30;
   // 4-Phasen-Zyklus: Schritt 1 - Idle - Schritt 2 - Idle (Idle als Zwischenbild)
