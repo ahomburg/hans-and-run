@@ -110,10 +110,16 @@ const AudioSys = {
 };
 
 /* =====================================================================
-   INPUT — Tastatur + Touch
+   INPUT — Tastatur + Touch + Gamepad
    ===================================================================== */
 const Input = {
+  // Kombinierte Flags — pro Frame aus allen Quellen zusammengefuehrt (siehe poll())
   left: false, right: false, jump: false, jumpPressed: false, sprint: false, down: false,
+  // Quellen einzeln, damit das Loslassen einer Quelle die anderen nicht ueberschreibt
+  keys:  { left: false, right: false, jump: false, sprint: false, down: false },
+  touch: { left: false, right: false, jump: false, sprint: false, down: false },
+  pad:   { left: false, right: false, jump: false, sprint: false, down: false },
+  padPrev: { jump: false, start: false, select: false, confirm: false },
   init() {
     const kmap = {
       "ArrowLeft": "left", "KeyA": "left",
@@ -127,19 +133,19 @@ const Input = {
       const k = kmap[e.code];
       if (k) {
         if (k === "jump" && !this.jump) this.jumpPressed = true;
-        this[k] = true;
+        this.keys[k] = true;
       }
       if (e.code === "KeyP" || e.code === "Escape") Game.togglePause();
       if (e.code === "KeyL") UI.toggleDebug();
       if (e.code === "KeyM") UI.toggleMute();
       if (e.code === "KeyR" && (Game.state === "play" || Game.state === "pause")) Game.restartLevel();
     });
-    addEventListener("keyup", e => { const k = kmap[e.code]; if (k) this[k] = false; });
+    addEventListener("keyup", e => { const k = kmap[e.code]; if (k) this.keys[k] = false; });
 
     const bind = (id, key) => {
       const el = document.getElementById(id);
-      const on = ev => { ev.preventDefault(); el.classList.add("pressed"); if (key === "jump" && !this.jump) this.jumpPressed = true; this[key] = true; };
-      const off = ev => { ev.preventDefault(); el.classList.remove("pressed"); this[key] = false; };
+      const on = ev => { ev.preventDefault(); el.classList.add("pressed"); if (key === "jump" && !this.jump) this.jumpPressed = true; this.touch[key] = true; };
+      const off = ev => { ev.preventDefault(); el.classList.remove("pressed"); this.touch[key] = false; };
       el.addEventListener("pointerdown", on);
       el.addEventListener("pointerup", off);
       el.addEventListener("pointercancel", off);
@@ -154,7 +160,75 @@ const Input = {
       ? matchMedia("(pointer: coarse), (any-pointer: coarse)").matches
       : "ontouchstart" in window;
     if (isTouch) document.getElementById("touch").classList.remove("hidden");
+
+    // Gamepad: Verbindung melden (gepollt wird pro Frame in poll())
+    addEventListener("gamepadconnected", () => UI.toast("Gamepad angeschlossen — ran an den Stick, Hans!"));
+    addEventListener("gamepaddisconnected", () => UI.toast("Gamepad getrennt — Tastatur springt ein"));
   },
+
+  /* Pro Frame aufrufen: Gamepad abfragen und alle Quellen kombinieren.
+     Gepollt statt Event-getrieben, weil Achsen/Sticks analoge Werte liefern. */
+  poll() {
+    this.readPad();
+    this.left   = this.keys.left   || this.touch.left   || this.pad.left;
+    this.right  = this.keys.right  || this.touch.right  || this.pad.right;
+    this.jump   = this.keys.jump   || this.touch.jump   || this.pad.jump;
+    this.sprint = this.keys.sprint || this.touch.sprint || this.pad.sprint;
+    this.down   = this.keys.down  || this.touch.down   || this.pad.down;
+  },
+
+  /* Standard-Gamepad-Mapping:
+     A/Kreuz = Sprung · Stick links/rechts + D-Pad = Laufen · unten = Durch Plattform fallen
+     X oder Schultertasten/Trigger = Sprint · Start = Pause/Menue · Select = Ton */
+  readPad() {
+    let gp = null;
+    if (navigator.getGamepads) {
+      const pads = navigator.getGamepads();
+      for (let i = 0; i < pads.length; i++) if (pads[i] && pads[i].connected) { gp = pads[i]; break; }
+    }
+    const p = this.pad;
+    p.left = p.right = p.jump = p.sprint = p.down = false;
+    if (!gp) { this.padPrev.jump = this.padPrev.start = this.padPrev.select = this.padPrev.confirm = false; return; }
+    const btn = i => !!(gp.buttons[i] && gp.buttons[i].pressed);
+    const val = i => (gp.buttons[i] ? gp.buttons[i].value : 0);
+    const DZ = 0.35;                         // Stick-Deadzone gegen Drift
+    const ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
+    if (ax < -DZ || btn(14)) p.left = true;
+    if (ax >  DZ || btn(15)) p.right = true;
+    if (ay >  DZ || btn(13)) p.down = true;
+    if (btn(0)) p.jump = true;
+    if (btn(2) || btn(4) || btn(5) || val(6) > 0.4 || val(7) > 0.4) p.sprint = true;
+
+    // Sprung nur als Druck-Ereignis werten, waehrend gespielt wird
+    if (p.jump && !this.padPrev.jump && Game.state === "play") this.jumpPressed = true;
+    this.padPrev.jump = p.jump;
+
+    // Start: im Spiel Pause, auf Menue-Screens Hauptaktion
+    const start = btn(9);
+    if (start && !this.padPrev.start) this.padAction();
+    this.padPrev.start = start;
+
+    // Select/Back: Ton an/aus
+    const select = btn(8);
+    if (select && !this.padPrev.select) UI.toggleMute();
+    this.padPrev.select = select;
+
+    // A/Kreuz bestaetigt ausserhalb des Spiels den Hauptbutton des Screens
+    const confirmA = btn(0);
+    if (confirmA && !this.padPrev.confirm && Game.state !== "play" && Game.state !== "pause") this.padAction();
+    this.padPrev.confirm = confirmA;
+  },
+
+  padAction() {
+    const click = id => { const el = document.getElementById(id); if (el) el.click(); };
+    if (Game.state === "start") click("btn-start");
+    else if (Game.state === "pause") click("btn-resume");
+    else if (Game.state === "complete") click("btn-next");
+    else if (Game.state === "gameover") click("btn-tryagain");
+    else if (Game.state === "win") click("btn-win-restart");
+    else if (Game.state === "play") Game.togglePause();
+  },
+
   consumeJump() { const j = this.jumpPressed; this.jumpPressed = false; return j; }
 };
 
@@ -1640,6 +1714,7 @@ function loop(ts) {
   const dt = Math.min(0.033, (ts - last) / 1000 || 0.016);
   last = ts;
   Game.clock += dt;
+  Input.poll();                              // Gamepad + Quellen-Merge (auch im Menue/Pause)
   if (Game.state === "play") {
     Game.totalTime += dt;
     update(dt);
